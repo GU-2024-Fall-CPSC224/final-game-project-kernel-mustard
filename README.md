@@ -1,12 +1,12 @@
-# CPSC 224 Final Project: [Your project name here]
+# CPSC 224 Final Project: [Clue in Java]
 
 ### Project Description:
 
 
 ### Team Information:
 
-- Team Name:  
-- Students on team:
-- Semester: Spring 2024
+- Team Name: Kernel Mustard
+- Students on team: Sam, Charlie, Waylan, & David
+- Semester: Spring 2025
 
 
