@@ -10,12 +10,12 @@ public class Weapons {
     // Constructor to initialize the list of weapons
     public Weapons() {
         weapons = new ArrayList<>();
-        weapons.add("Colonel Mustard");
-        weapons.add("Professor Plum");
-        weapons.add("Miss Scarlet");
-        weapons.add("Reverend Green");
-        weapons.add("Mrs. White");
-        weapons.add("Mrs. Peacock");
+        weapons.add("Rope");
+        weapons.add("Lead Pipe");
+        weapons.add("Knife");
+        weapons.add("Wrench");
+        weapons.add("Candlestick");
+        weapons.add("Revolver");
     }
 
     // Get function for weapons

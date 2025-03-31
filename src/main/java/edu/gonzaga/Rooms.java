@@ -10,12 +10,15 @@ public class Rooms {
     // Constructor to initialize the list of rooms
     public Rooms() {
         rooms = new ArrayList<>();
-        rooms.add("Colonel Mustard");
-        rooms.add("Professor Plum");
-        rooms.add("Miss Scarlet");
-        rooms.add("Reverend Green");
-        rooms.add("Mrs. White");
-        rooms.add("Mrs. Peacock");
+        rooms.add("Ballroom");
+        rooms.add("Conservatory");
+        rooms.add("Billiard Room");
+        rooms.add("Dining Room");
+        rooms.add("Hall");
+        rooms.add("Kitchen");
+        rooms.add("Library");
+        rooms.add("Lounge");
+        rooms.add("Study");
     }
 
     // Get function for rooms
