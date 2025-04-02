@@ -2,6 +2,8 @@
 
 ### Project Description:
 
+### Link to Project Plan Template
+Click (here)[https://docs.google.com/document/d/1rAvvZDO3ekzQprj72YmAgo4J0YhkDa2sA9NYbiRW6rM/edit?usp=sharing] for project plan.
 
 ### Team Information:
 
