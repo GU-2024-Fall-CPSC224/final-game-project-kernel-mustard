@@ -4,3 +4,4 @@ For the requirements of project part 1, we are each supposed to show we can comm
 The following people have committed:
  * Sam has committed to this repository.
  * Charles has committed to this repository.
+ * Waylan has committed to this repository
