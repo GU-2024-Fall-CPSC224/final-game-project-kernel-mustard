@@ -4,7 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,14 +75,15 @@ public class ClueGUI extends JFrame {
         /*
      * Dialog to set up players at the start of the game
      */
+    
     private void setupPlayers() {
         // List of available characters
-        String[] characters = {"Colonel Mustard", "Professor Plum", "Miss Scarlet", 
+        String[] characters = {"Colonel Mustard", "Professor Plum", "Miss Scarlet",
                              "Reverend Green", "Mrs. White", "Mrs. Peacock"};
-        
+
         // Show dialog to get number of players
         String input = JOptionPane.showInputDialog(this, "Enter number of players (2-6):", "Player Setup", JOptionPane.QUESTION_MESSAGE);
-        
+
         // Validate input
         int numPlayers = 3; // Default
         try {
@@ -89,85 +92,92 @@ public class ClueGUI extends JFrame {
             if (numPlayers > 6) numPlayers = 6;
         } catch (NumberFormatException e) {
             // Default to 3 if input is invalid
+            JOptionPane.showMessageDialog(this,
+                    "Invalid input. Defaulting to 3 players.",
+                    "Invalid Input", JOptionPane.ERROR_MESSAGE);
         }
-        
-        // Create player setup panel
-        JPanel playerSetupPanel = new JPanel(new GridLayout(numPlayers + 1, 2, 10, 10));
-        JLabel[] nameLabels = new JLabel[numPlayers];
-        JTextField[] nameFields = new JTextField[numPlayers];
-        JComboBox<String>[] characterBoxes = new JComboBox[numPlayers];
-        
-        // Add header
-        playerSetupPanel.add(new JLabel("Player Name:"));
-        playerSetupPanel.add(new JLabel("Character:"));
-        
-        // Add input fields for each player
-        for (int i = 0; i < numPlayers; i++) {
-            nameLabels[i] = new JLabel("Player " + (i + 1) + ":");
-            nameFields[i] = new JTextField("Player " + (i + 1), 15);
-            characterBoxes[i] = new JComboBox<>(characters);
-            characterBoxes[i].setSelectedIndex(i % characters.length);
-            
-            playerSetupPanel.add(nameFields[i]);
-            playerSetupPanel.add(characterBoxes[i]);
-        }
-        
-        // Show dialog
-        int result = JOptionPane.showConfirmDialog(this, playerSetupPanel, 
-                                               "Enter Player Details", 
-                                               JOptionPane.OK_CANCEL_OPTION);
-        
-        if (result == JOptionPane.OK_OPTION) {
-            // Check for duplicate character selections
-            boolean[] characterUsed = new boolean[characters.length];
-            
+
+        while (true) {
+            // Create player setup panel
+            JPanel playerSetupPanel = new JPanel(new GridLayout(numPlayers + 1, 2, 10, 10));
+            JLabel[] nameLabels = new JLabel[numPlayers];
+            JTextField[] nameFields = new JTextField[numPlayers];
+            JComboBox<String>[] characterBoxes = new JComboBox[numPlayers];
+
+            // Add header
+            playerSetupPanel.add(new JLabel("Player Name:"));
+            playerSetupPanel.add(new JLabel("Character:"));
+
             for (int i = 0; i < numPlayers; i++) {
-                String name = nameFields[i].getText().trim();
-                if (name.isEmpty()) name = "Player " + (i + 1);
-                
-                String character = (String) characterBoxes[i].getSelectedItem();
-                int charIndex = -1;
-                for (int j = 0; j < characters.length; j++) {
-                    if (characters[j].equals(character)) {
-                        charIndex = j;
+                nameLabels[i] = new JLabel("Player " + (i + 1) + ":");
+                nameFields[i] = new JTextField("Player " + (i + 1), 15);
+                characterBoxes[i] = new JComboBox<>(characters);
+                characterBoxes[i].setSelectedIndex(i % characters.length);
+
+                playerSetupPanel.add(nameFields[i]);
+                playerSetupPanel.add(characterBoxes[i]);
+            }
+
+            int result = JOptionPane.showConfirmDialog(this, playerSetupPanel,
+                    "Enter Player Details",
+                    JOptionPane.OK_CANCEL_OPTION);
+
+            if (result == JOptionPane.OK_OPTION) {
+                Set<String> usedNames = new HashSet<>();
+                Set<String> usedCharacters = new HashSet<>();
+                boolean hasDuplicates = false;
+
+                for (int i = 0; i < numPlayers; i++) {
+                    String name = nameFields[i].getText().trim();
+                    if (name.isEmpty()) name = "Player " + (i + 1);
+
+                    String character = (String) characterBoxes[i].getSelectedItem();
+
+                    if (usedNames.contains(name) || usedCharacters.contains(character)) {
+                        hasDuplicates = true;
                         break;
                     }
+
+                    usedNames.add(name);
+                    usedCharacters.add(character);
                 }
-                
-                // If character already chosen, find first available character
-                if (characterUsed[charIndex]) {
-                    for (int j = 0; j < characters.length; j++) {
-                        if (!characterUsed[j]) {
-                            charIndex = j;
-                            character = characters[j];
-                            break;
-                        }
-                    }
+
+                if (hasDuplicates) {
+                    JOptionPane.showMessageDialog(this,
+                            "Duplicate names or characters detected. Please enter unique values.",
+                            "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                    continue; // Loop again
                 }
-                
-                characterUsed[charIndex] = true;
-                
-                // Get starting position for this character
-                Point startPos = CHARACTER_START_POSITIONS.get(character);
-                Color color = CHARACTER_COLORS.get(character);
-                
-                // Create player and add to list
-                GUIPlayer player = new GUIPlayer(name, character, color, startPos.y, startPos.x);
-                players.add(player);
-            }
-        } else {
-            // If user cancels, create a default of 3 players
-            String[] defaultNames = {"Player 1", "Player 2", "Player 3"};
-            String[] defaultChars = {"Colonel Mustard", "Professor Plum", "Miss Scarlet"};
-            
-            for (int i = 0; i < 3; i++) {
-                Point startPos = CHARACTER_START_POSITIONS.get(defaultChars[i]);
-                Color color = CHARACTER_COLORS.get(defaultChars[i]);
-                GUIPlayer player = new GUIPlayer(defaultNames[i], defaultChars[i], color, startPos.y, startPos.x);
-                players.add(player);
+
+                // No duplicates, finalize players
+                for (int i = 0; i < numPlayers; i++) {
+                    String name = nameFields[i].getText().trim();
+                    if (name.isEmpty()) name = "Player " + (i + 1);
+                    String character = (String) characterBoxes[i].getSelectedItem();
+
+                    Point startPos = CHARACTER_START_POSITIONS.get(character);
+                    Color color = CHARACTER_COLORS.get(character);
+
+                    GUIPlayer player = new GUIPlayer(name, character, color, startPos.y, startPos.x);
+                    players.add(player);
+                }
+                break;
+            } else {
+                // User hit cancel, fallback to defaults
+                String[] defaultNames = {"Player 1", "Player 2", "Player 3"};
+                String[] defaultChars = {"Colonel Mustard", "Professor Plum", "Miss Scarlet"};
+
+                for (int i = 0; i < 3; i++) {
+                    Point startPos = CHARACTER_START_POSITIONS.get(defaultChars[i]);
+                    Color color = CHARACTER_COLORS.get(defaultChars[i]);
+                    GUIPlayer player = new GUIPlayer(defaultNames[i], defaultChars[i], color, startPos.y, startPos.x);
+                    players.add(player);
+                }
+                break;
             }
         }
     }
+
     
     /*
      * Get the current player whose turn it is
@@ -206,8 +216,11 @@ public class ClueGUI extends JFrame {
         private JButton accuseButton;
         private JButton suggestButton;
         private JButton endTurnButton;
+        private JButton rollDiceButton;
+        private JLabel diceResults;
         private JTextArea textLog;
         private JScrollPane logScrollPane;
+        public int movesRemaining = 0;
 
         public AccusationPanel() {
             setLayout(new BorderLayout());
@@ -216,7 +229,7 @@ public class ClueGUI extends JFrame {
 
             // Create panel for accusations
             JPanel accusePanel = new JPanel();
-            accusePanel.setLayout(new GridLayout(9, 1, 5, 10));
+            accusePanel.setLayout(new GridLayout(11, 1, 5, 10));
             setBackground(new Color(200, 180, 160));
 
             // Room selection
@@ -238,6 +251,8 @@ public class ClueGUI extends JFrame {
             accuseButton = new JButton("Make Accusation");
             suggestButton = new JButton("Make Suggestion");
             endTurnButton = new JButton("End Turn");
+            rollDiceButton = new JButton("Roll Dice");
+            diceResults = new JLabel("Moves Left: 0");
 
             // Setup actions for our buttons
             accuseButton.addActionListener(e -> {
@@ -252,11 +267,19 @@ public class ClueGUI extends JFrame {
                 endTurn();
                 boardPanel.requestFocusInWindow();
             });
+            rollDiceButton.addActionListener(e -> {
+                int diceRoll = (int) (Math.random() * 6) + 1;
+                movesRemaining = diceRoll;
+                diceResults.setText("Moves Left: " + movesRemaining);
+                addToGameLog(getCurrentPlayer().getName() + " rolled a " + diceRoll + ".");
+                boardPanel.requestFocusInWindow();
+            });
 
             // Ensure buttons don't keep focus
             accuseButton.setFocusable(false);
             suggestButton.setFocusable(false);
             endTurnButton.setFocusable(false);
+            rollDiceButton.setFocusable(false);
 
             // Add compononents to our panel
             accusePanel.add(new JLabel("Make an accusation:"));
@@ -269,6 +292,8 @@ public class ClueGUI extends JFrame {
             accusePanel.add(accuseButton);
             accusePanel.add(suggestButton);
             accusePanel.add(endTurnButton);
+            accusePanel.add(rollDiceButton);
+            accusePanel.add(diceResults);
 
             // Setup a chat log
             textLog = new JTextArea(10, 20);
@@ -337,6 +362,8 @@ public class ClueGUI extends JFrame {
          * End the current player's turn and move to the next player
          */
         private void endTurn() {
+            movesRemaining = 0;
+            diceResults.setText("Moves Left: 0");
             nextPlayerTurn();
             boardPanel.repaint();
         }
@@ -551,6 +578,11 @@ public class ClueGUI extends JFrame {
         private void movePlayer(int keyCode) {
             GUIPlayer currentPlayer = getCurrentPlayer();
             if (currentPlayer == null) return;
+
+            if (accusationPanel.movesRemaining <= 0 && keyCode != KeyEvent.VK_ENTER) {
+                accusationPanel.addToGameLog("You have no moves left. Roll the dice to continue.");
+                return;
+            }
             
             int newRow = currentPlayer.getRow();
             int newCol = currentPlayer.getCol();
@@ -613,6 +645,9 @@ public class ClueGUI extends JFrame {
                     if (!tileOccupied) {
                         currentPlayer.setRow(newRow);
                         currentPlayer.setCol(newCol);
+
+                        accusationPanel.movesRemaining--;
+                        accusationPanel.diceResults.setText("Moves Left: " + accusationPanel.movesRemaining);
                         
                         // Check if player moved to a wall opening
                         checkIfAtWallOpening(currentPlayer);
@@ -950,3 +985,4 @@ public class ClueGUI extends JFrame {
         }
     }
 }
+
