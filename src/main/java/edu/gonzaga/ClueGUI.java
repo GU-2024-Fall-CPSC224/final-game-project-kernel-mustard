@@ -1,5 +1,6 @@
 package edu.gonzaga;
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
@@ -9,6 +10,32 @@ import java.util.List;
 
 public class ClueGUI extends JFrame {
     private BoardPanel boardPanel;
+    private AccusationPanel accusationPanel;
+    private JSplitPane splitPane;
+    private List<GUIPlayer> players = new ArrayList<>();
+    private int currentPlayerIndex = 0;
+
+    // Map of starting positions for each character
+    private static final Map<String, Point> CHARACTER_START_POSITIONS = new HashMap<>();
+    static {
+        CHARACTER_START_POSITIONS.put("Colonel Mustard", new Point(0, 13)); // Yellow, starts near Lounge
+        CHARACTER_START_POSITIONS.put("Professor Plum", new Point(18, 14)); // Purple, starts near Study
+        CHARACTER_START_POSITIONS.put("Miss Scarlet", new Point(5, 0)); // Red, starts near Kitchen
+        CHARACTER_START_POSITIONS.put("Reverend Green", new Point(18, 4)); // Green, starts near Conservatory
+        CHARACTER_START_POSITIONS.put("Mrs. White", new Point(4, 17)); // White, starts near Lounge
+        CHARACTER_START_POSITIONS.put("Mrs. Peacock", new Point(12, 17)); // Blue, starts near Library
+    }
+    
+    // Map character names to colors
+    private static final Map<String, Color> CHARACTER_COLORS = new HashMap<>();
+    static {
+        CHARACTER_COLORS.put("Colonel Mustard", new Color(255, 215, 0));
+        CHARACTER_COLORS.put("Professor Plum", new Color(128, 0, 128));
+        CHARACTER_COLORS.put("Miss Scarlet", new Color(220, 20, 60));
+        CHARACTER_COLORS.put("Reverend Green", new Color(34, 139, 34));
+        CHARACTER_COLORS.put("Mrs. White", Color.WHITE);
+        CHARACTER_COLORS.put("Mrs. Peacock", new Color(65, 105, 225));
+    }
     
     /*
      * Constructor for our main game window
@@ -18,9 +45,17 @@ public class ClueGUI extends JFrame {
         setTitle("Clue Board Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 800);
+
+        // Calls player setup windows before initializing game
+        setupPlayers();
         
         boardPanel = new BoardPanel();
-        add(boardPanel);
+        accusationPanel = new AccusationPanel();
+
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, boardPanel, accusationPanel);
+        splitPane.setResizeWeight(0.8);
+        // splitPane.setDebugGraphicsOptions(800);
+        add(splitPane);
         
         boardPanel.setFocusable(true);
         
@@ -28,6 +63,128 @@ public class ClueGUI extends JFrame {
         setVisible(true);
         
         boardPanel.requestFocusInWindow();
+
+        if(!players.isEmpty()) {
+            accusationPanel.addToGameLog("Game started! " + players.get(currentPlayerIndex).getName() + 
+                                        " (" + players.get(currentPlayerIndex).getCharacter() + ") goes first.");
+        }
+    }
+
+        /*
+     * Dialog to set up players at the start of the game
+     */
+    private void setupPlayers() {
+        // List of available characters
+        String[] characters = {"Colonel Mustard", "Professor Plum", "Miss Scarlet", 
+                             "Reverend Green", "Mrs. White", "Mrs. Peacock"};
+        
+        // Show dialog to get number of players
+        String input = JOptionPane.showInputDialog(this, "Enter number of players (2-6):", "Player Setup", JOptionPane.QUESTION_MESSAGE);
+        
+        // Validate input
+        int numPlayers = 3; // Default
+        try {
+            numPlayers = Integer.parseInt(input);
+            if (numPlayers < 2) numPlayers = 2;
+            if (numPlayers > 6) numPlayers = 6;
+        } catch (NumberFormatException e) {
+            // Default to 3 if input is invalid
+        }
+        
+        // Create player setup panel
+        JPanel playerSetupPanel = new JPanel(new GridLayout(numPlayers + 1, 2, 10, 10));
+        JLabel[] nameLabels = new JLabel[numPlayers];
+        JTextField[] nameFields = new JTextField[numPlayers];
+        JComboBox<String>[] characterBoxes = new JComboBox[numPlayers];
+        
+        // Add header
+        playerSetupPanel.add(new JLabel("Player Name:"));
+        playerSetupPanel.add(new JLabel("Character:"));
+        
+        // Add input fields for each player
+        for (int i = 0; i < numPlayers; i++) {
+            nameLabels[i] = new JLabel("Player " + (i + 1) + ":");
+            nameFields[i] = new JTextField("Player " + (i + 1), 15);
+            characterBoxes[i] = new JComboBox<>(characters);
+            characterBoxes[i].setSelectedIndex(i % characters.length);
+            
+            playerSetupPanel.add(nameFields[i]);
+            playerSetupPanel.add(characterBoxes[i]);
+        }
+        
+        // Show dialog
+        int result = JOptionPane.showConfirmDialog(this, playerSetupPanel, 
+                                               "Enter Player Details", 
+                                               JOptionPane.OK_CANCEL_OPTION);
+        
+        if (result == JOptionPane.OK_OPTION) {
+            // Check for duplicate character selections
+            boolean[] characterUsed = new boolean[characters.length];
+            
+            for (int i = 0; i < numPlayers; i++) {
+                String name = nameFields[i].getText().trim();
+                if (name.isEmpty()) name = "Player " + (i + 1);
+                
+                String character = (String) characterBoxes[i].getSelectedItem();
+                int charIndex = -1;
+                for (int j = 0; j < characters.length; j++) {
+                    if (characters[j].equals(character)) {
+                        charIndex = j;
+                        break;
+                    }
+                }
+                
+                // If character already chosen, find first available character
+                if (characterUsed[charIndex]) {
+                    for (int j = 0; j < characters.length; j++) {
+                        if (!characterUsed[j]) {
+                            charIndex = j;
+                            character = characters[j];
+                            break;
+                        }
+                    }
+                }
+                
+                characterUsed[charIndex] = true;
+                
+                // Get starting position for this character
+                Point startPos = CHARACTER_START_POSITIONS.get(character);
+                Color color = CHARACTER_COLORS.get(character);
+                
+                // Create player and add to list
+                GUIPlayer player = new GUIPlayer(name, character, color, startPos.y, startPos.x);
+                players.add(player);
+            }
+        } else {
+            // If user cancels, create a default of 3 players
+            String[] defaultNames = {"Player 1", "Player 2", "Player 3"};
+            String[] defaultChars = {"Colonel Mustard", "Professor Plum", "Miss Scarlet"};
+            
+            for (int i = 0; i < 3; i++) {
+                Point startPos = CHARACTER_START_POSITIONS.get(defaultChars[i]);
+                Color color = CHARACTER_COLORS.get(defaultChars[i]);
+                GUIPlayer player = new GUIPlayer(defaultNames[i], defaultChars[i], color, startPos.y, startPos.x);
+                players.add(player);
+            }
+        }
+    }
+    
+    /*
+     * Get the current player whose turn it is
+     */
+    public GUIPlayer getCurrentPlayer() {
+        if (players.isEmpty()) return null;
+        return players.get(currentPlayerIndex);
+    }
+    
+    /*
+     * Advance to the next player's turn
+     */
+    public void nextPlayerTurn() {
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        accusationPanel.addToGameLog("\n" + players.get(currentPlayerIndex).getName() + 
+                                  " (" + players.get(currentPlayerIndex).getCharacter() + 
+                                  ") it's your turn.");
     }
     
     /*
@@ -38,6 +195,161 @@ public class ClueGUI extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ClueGUI());
     } 
+
+    /*
+     * Panel for making accusations with drop-down (combo boxes) menus for rooms, weapons, and suspects
+     */
+    private class AccusationPanel extends JPanel {
+        private JComboBox<String> roomBox;
+        private JComboBox<String> weaponBox;
+        private JComboBox<String> suspectBox;
+        private JButton accuseButton;
+        private JButton suggestButton;
+        private JButton endTurnButton;
+        private JTextArea textLog;
+        private JScrollPane logScrollPane;
+
+        public AccusationPanel() {
+            setLayout(new BorderLayout());
+            setBackground(new Color(200, 180, 160));
+            setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            // Create panel for accusations
+            JPanel accusePanel = new JPanel();
+            accusePanel.setLayout(new GridLayout(9, 1, 5, 10));
+            setBackground(new Color(200, 180, 160));
+
+            // Room selection
+            String[] rooms = {"Ballroom", "Conservatory", "Billiard Room", "Dining Room", "Hall", "Kitchen", "Library", "Lounge", "Study"};
+            JLabel roomLabel = new JLabel("Room:");
+            roomBox = new JComboBox<>(rooms);
+
+            // Weapon selection
+            String[] weapons = {"Rope", "Lead Pipe", "Knife", "Wrench", "Candlestick", "Revolver"};
+            JLabel weaponLabel = new JLabel("Weapon:");
+            weaponBox = new JComboBox<>(weapons);
+
+            // Suspect selection
+            String[] suspects = {"Colonel Mustard", "Professor Plum", "Miss Scarlet", "Reverend Green", "Mrs. White", "Mrs. Peacock"};
+            JLabel suspectLabel = new JLabel("Suspect:");
+            suspectBox = new JComboBox<>(suspects);
+
+            // Add buttons
+            accuseButton = new JButton("Make Accusation");
+            suggestButton = new JButton("Make Suggestion");
+            endTurnButton = new JButton("End Turn");
+
+            // Setup actions for our buttons
+            accuseButton.addActionListener(e -> {
+                makeAccusation();
+                boardPanel.requestFocusInWindow();
+            });
+            suggestButton.addActionListener(e -> {
+                makeSuggestion();
+                boardPanel.requestFocusInWindow();
+            });
+            endTurnButton.addActionListener(e -> {
+                endTurn();
+                boardPanel.requestFocusInWindow();
+            });
+
+            // Ensure buttons don't keep focus
+            accuseButton.setFocusable(false);
+            suggestButton.setFocusable(false);
+            endTurnButton.setFocusable(false);
+
+            // Add compononents to our panel
+            accusePanel.add(new JLabel("Make an accusation:"));
+            accusePanel.add(roomLabel);
+            accusePanel.add(roomBox);
+            accusePanel.add(suspectLabel);
+            accusePanel.add(suspectBox);
+            accusePanel.add(weaponLabel);
+            accusePanel.add(weaponBox);
+            accusePanel.add(accuseButton);
+            accusePanel.add(suggestButton);
+            accusePanel.add(endTurnButton);
+
+            // Setup a chat log
+            textLog = new JTextArea(10, 20);
+            textLog.setEditable(false);
+            textLog.setFont(new Font("Times New Roman", Font.PLAIN, 12));
+            textLog.setText("Game started. Use arrow keys to move.\n");
+            logScrollPane = new JScrollPane(textLog);
+            logScrollPane.setBorder(BorderFactory.createTitledBorder("Game Log"));
+
+            add(accusePanel, BorderLayout.NORTH);
+            add(logScrollPane, BorderLayout.CENTER);
+        }
+
+        /* 
+         * Make an accusation with the selected options
+         */
+        private void makeAccusation() {
+            GUIPlayer currentPlayer = getCurrentPlayer();
+            if (currentPlayer == null) return;
+            
+            String room = (String) roomBox.getSelectedItem();
+            String suspect = (String) suspectBox.getSelectedItem();
+            String weapon = (String) weaponBox.getSelectedItem();
+            
+            String accusation = currentPlayer.getName() + " (" + currentPlayer.getCharacter() + ") accuses: " + 
+                               suspect + " killed Mr. Boddy in the " + 
+                               room + " with the " + weapon + ".";
+            
+            addToGameLog(accusation);
+            
+            // TODO: Add code to check if accusation is correct
+            // This will need to connect to your game logic
+            
+            // Sample response - in real game this would check against solution
+            addToGameLog("Checking accusation...");
+        }
+        
+        /*
+         * Make a suggestion with the selected options
+         */
+        private void makeSuggestion() {
+            GUIPlayer currentPlayer = getCurrentPlayer();
+            if (currentPlayer == null) return;
+            
+            if (!currentPlayer.isInRoom()) {
+                addToGameLog("You must be in a room to make a suggestion!");
+                return;
+            }
+            
+            String room = currentPlayer.getCurrentRoom();
+            String suspect = (String) suspectBox.getSelectedItem();
+            String weapon = (String) weaponBox.getSelectedItem();
+            
+            String suggestion = currentPlayer.getName() + " (" + currentPlayer.getCharacter() + 
+                              ") suggests: It was " + suspect + 
+                              " in the " + room + " with the " + weapon + ".";
+            
+            addToGameLog(suggestion);
+            
+            // TODO: Add code to process suggestion
+            // This would typically involve other players trying to disprove suggestion
+            addToGameLog("Other players considering your suggestion...");
+        }
+        
+        /*
+         * End the current player's turn and move to the next player
+         */
+        private void endTurn() {
+            nextPlayerTurn();
+            boardPanel.repaint();
+        }
+        
+        /*
+         * Add a message to the game log
+         */
+        public void addToGameLog(String message) {
+            textLog.append(message + "\n");
+            // Auto-scroll to bottom
+            textLog.setCaretPosition(textLog.getDocument().getLength());
+        }
+    }
     
     private class BoardPanel extends JPanel {
         // Set room coordinates and sizes
@@ -49,16 +361,9 @@ public class ClueGUI extends JFrame {
         private final int GRID_SIZE = 40;
         private final int ROWS = 18;
         private final int COLS = 19;
-
-        // TODO: For the following player positions, these are temporary. We will want to change
-        // starting position based on suspect chosen.
-        private int playerRow = 11;
-        private int playerCol = 11;
         
         // Movement statuses
         private boolean[][] validMovementTiles;
-        private boolean playerInRoom = false;
-        private String currentRoom = null;
         
         /*
          * This inner class represents our doorways for entering/exiting a room.
@@ -244,8 +549,11 @@ public class ClueGUI extends JFrame {
          * Handles player movement based upon keyboard input
          */
         private void movePlayer(int keyCode) {
-            int newRow = playerRow;
-            int newCol = playerCol;
+            GUIPlayer currentPlayer = getCurrentPlayer();
+            if (currentPlayer == null) return;
+            
+            int newRow = currentPlayer.getRow();
+            int newCol = currentPlayer.getCol();
             
             switch (keyCode) {
                 case KeyEvent.VK_UP:
@@ -262,17 +570,17 @@ public class ClueGUI extends JFrame {
                     break;
                 case KeyEvent.VK_ENTER:
                     // Handle room entry/exit with 'Enter' key
-                    handleRoomEntryExit();
+                    handleRoomEntryExit(currentPlayer);
                     return;
                 default:
                     return; // Ignore other keys
             }
             
             // Check if player is in a room
-            if (playerInRoom) {
+            if (currentPlayer.isInRoom()) {
                 // If in room, can only move to wall opening hallway points
                 boolean isExit = false;
-                for (WallOpening opening : wallOpenings.get(currentRoom)) {
+                for (WallOpening opening : wallOpenings.get(currentPlayer.getCurrentRoom())) {
                     if (opening.hallwayPoint.y == newRow && opening.hallwayPoint.x == newCol) {
                         isExit = true;
                         break;
@@ -280,10 +588,10 @@ public class ClueGUI extends JFrame {
                 }
                 
                 if (isExit) {
-                    playerRow = newRow;
-                    playerCol = newCol;
-                    playerInRoom = false;
-                    currentRoom = null;
+                    currentPlayer.setRow(newRow);
+                    currentPlayer.setCol(newCol);
+                    currentPlayer.setInRoom(false);
+                    currentPlayer.setCurrentRoom(null);
                     repaint();
                 }
             } 
@@ -292,13 +600,25 @@ public class ClueGUI extends JFrame {
                 // Check if new position is valid for movement
                 if (newRow >= 0 && newRow < ROWS && newCol >= 0 && newCol < COLS && 
                     validMovementTiles[newRow][newCol]) {
-                    playerRow = newRow;
-                    playerCol = newCol;
                     
-                    // Check if player moved to a wall opening
-                    checkIfAtWallOpening();
+                    // Check if another player is already on this tile
+                    boolean tileOccupied = false;
+                    for (GUIPlayer p : players) {
+                        if (p != currentPlayer && p.getRow() == newRow && p.getCol() == newCol && !p.isInRoom()) {
+                            tileOccupied = true;
+                            break;
+                        }
+                    }
                     
-                    repaint();
+                    if (!tileOccupied) {
+                        currentPlayer.setRow(newRow);
+                        currentPlayer.setCol(newCol);
+                        
+                        // Check if player moved to a wall opening
+                        checkIfAtWallOpening(currentPlayer);
+                        
+                        repaint();
+                    }
                 }
             }
         }
@@ -306,22 +626,24 @@ public class ClueGUI extends JFrame {
         /*
          * This function manages entrance and exit to/from rooms when a player presses the 'Enter' key
          */
-        private void handleRoomEntryExit() {
-            if (!playerInRoom) {
+        private void handleRoomEntryExit(GUIPlayer player) {
+            if (!player.isInRoom()) {
                 // Check if player is standing next to a wall opening
                 for (Map.Entry<String, List<WallOpening>> entry : wallOpenings.entrySet()) {
                     String roomName = entry.getKey();
                     List<WallOpening> openings = entry.getValue();
                     
                     for (WallOpening opening : openings) {
-                        if (opening.hallwayPoint.y == playerRow && opening.hallwayPoint.x == playerCol) {
+                        if (opening.hallwayPoint.y == player.getRow() && opening.hallwayPoint.x == player.getCol()) {
                             // Enter room
-                            playerInRoom = true;
-                            currentRoom = roomName;
+                            player.setInRoom(true);
+                            player.setCurrentRoom(roomName);
                             
                             // Move player inside room
-                            playerRow = opening.roomPoint.y;
-                            playerCol = opening.roomPoint.x;
+                            player.setRow(opening.roomPoint.y);
+                            player.setCol(opening.roomPoint.x);
+
+                            accusationPanel.addToGameLog(player.getName() + " entered the " + roomName);
                             
                             repaint();
                             return;
@@ -335,11 +657,11 @@ public class ClueGUI extends JFrame {
          * Checks if a user is standing next to a doorway. We call this after each time the player moves and just use it
          * to tell the user they can push 'enter' to go into a room.
          */
-        private void checkIfAtWallOpening() {
+        private void checkIfAtWallOpening(GUIPlayer player) {
             // Check if player is standing at a wall opening
             for (Map.Entry<String, List<WallOpening>> entry : wallOpenings.entrySet()) {
                 for (WallOpening opening : entry.getValue()) {
-                    if (opening.hallwayPoint.y == playerRow && opening.hallwayPoint.x == playerCol) {
+                    if (opening.hallwayPoint.y == player.getRow() && opening.hallwayPoint.x == player.getCol()) {
                         repaint();
                         return;
                     }
@@ -391,7 +713,7 @@ public class ClueGUI extends JFrame {
             drawRoomsWithOpenings(g2d);
             
             // Draw player token
-            drawPlayer(g2d);
+            drawPlayers(g2d);
             
             // Draw status information
             drawStatus(g2d);
@@ -544,44 +866,87 @@ public class ClueGUI extends JFrame {
         }
         
         /*
-         * This function will need to be updated to support multiple players
-         * Currently draws a singular player token at its current position on the board
+         * Draws all player tokens on the board
          */
-        private void drawPlayer(Graphics2D g2d) {
-            // Calculate pixel position from grid coordinates
-            int x = playerCol * GRID_SIZE + GRID_SIZE / 2;
-            int y = playerRow * GRID_SIZE + GRID_SIZE / 2;
-            
-            // Draw player token as a yellow circle
-            g2d.setColor(Color.YELLOW);
-            g2d.fillOval(x - 15, y - 15, 30, 30);
-            g2d.setColor(Color.BLACK);
-            g2d.drawOval(x - 15, y - 15, 30, 30);
+        private void drawPlayers(Graphics2D g2d) {
+            // Draw each player token
+            for (GUIPlayer player : players) {
+                // Get player position
+                int playerX, playerY;
+                
+                if (player.isInRoom()) {
+                    // If player is in a room, calculate position within room
+                    playerX = player.getCol() * GRID_SIZE;
+                    playerY = player.getRow() * GRID_SIZE;
+                } else {
+                    // If player is in hallway, use grid coordinates
+                    playerX = player.getCol() * GRID_SIZE;
+                    playerY = player.getRow() * GRID_SIZE;
+                }
+                
+                // Draw player token
+                g2d.setColor(player.getColor());
+                g2d.fillOval(playerX + 5, playerY + 5, GRID_SIZE - 10, GRID_SIZE - 10);
+                
+                // Draw token outline
+                g2d.setColor(Color.BLACK);
+                g2d.drawOval(playerX + 5, playerY + 5, GRID_SIZE - 10, GRID_SIZE - 10);
+                
+                // Draw first letter of character name
+                g2d.setFont(new Font("Arial", Font.BOLD, 16));
+                g2d.setColor(Color.BLACK);
+                String initial = player.getCharacter().substring(0, 1);
+                FontMetrics metrics = g2d.getFontMetrics();
+                int textWidth = metrics.stringWidth(initial);
+                int textHeight = metrics.getHeight();
+                g2d.drawString(initial, playerX + (GRID_SIZE - textWidth) / 2, 
+                              playerY + (GRID_SIZE + textHeight) / 2 - 2);
+                
+                // Highlight current player so it's easier to tell who's turn it is
+                if (player == getCurrentPlayer()) {
+                    g2d.setColor(Color.WHITE);
+                    g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{5}, 0));
+                    g2d.drawOval(playerX + 2, playerY + 2, GRID_SIZE - 4, GRID_SIZE - 4);
+                    g2d.setStroke(new BasicStroke(1));
+                }
+            }
         }
         
-        /*
-         * This function just draws some basic information at the bottom of our screen.
-         * It tells us how to move and when we can enter a room
+       /*
+         * Draws game status information on the board
          */
         private void drawStatus(Graphics2D g2d) {
-            g2d.setColor(Color.BLACK);
-            g2d.setFont(new Font("Times New Roman", Font.BOLD, 14));
+            GUIPlayer currentPlayer = getCurrentPlayer();
+            if (currentPlayer == null) return;
             
-            String status = "Use arrow keys to move";
-            if (playerInRoom) {
-                status = "In " + currentRoom + " - Move to an opening to exit";
+            // Draw current player info
+            g2d.setColor(Color.BLACK);
+            g2d.setFont(new Font("Arial", Font.BOLD, 14));
+            g2d.drawString("Current Player: " + currentPlayer.getName() + " (" + currentPlayer.getCharacter() + ")", 10, getHeight() - 40);
+            
+            // Draw player position info
+            String posInfo;
+            if (currentPlayer.isInRoom()) {
+                posInfo = "In the " + currentPlayer.getCurrentRoom();
             } else {
-                // Check if player is at a wall opening
+                // Check if player is at doorway
+                String doorwayInfo = "";
                 for (Map.Entry<String, List<WallOpening>> entry : wallOpenings.entrySet()) {
                     for (WallOpening opening : entry.getValue()) {
-                        if (opening.hallwayPoint.y == playerRow && opening.hallwayPoint.x == playerCol) {
-                            status = "At " + entry.getKey() + " entrance - Press ENTER to enter";
+                        if (opening.hallwayPoint.y == currentPlayer.getRow() && 
+                            opening.hallwayPoint.x == currentPlayer.getCol()) {
+                            doorwayInfo = " - Press Enter to enter " + entry.getKey();
                             break;
                         }
                     }
+                    if (!doorwayInfo.isEmpty()) break;
                 }
+                posInfo = "In hallway" + doorwayInfo;
             }
-            g2d.drawString(status, 10, 780);
+            g2d.drawString(posInfo, 10, getHeight() - 20);
+            
+            // Draw navigation instructions
+            g2d.drawString("Use arrow keys to move, Enter to enter/exit rooms", getWidth() - 400, getHeight() - 20);
         }
     }
 }
