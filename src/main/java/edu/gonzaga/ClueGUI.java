@@ -102,7 +102,7 @@ public class ClueGUI extends JFrame {
             JPanel playerSetupPanel = new JPanel(new GridLayout(numPlayers + 1, 2, 10, 10));
             JLabel[] nameLabels = new JLabel[numPlayers];
             JTextField[] nameFields = new JTextField[numPlayers];
-            JComboBox<String>[] characterBoxes = new JComboBox[numPlayers];
+            List<JComboBox<String>> characterBoxes = new ArrayList<>();
 
             // Add header
             playerSetupPanel.add(new JLabel("Player Name:"));
@@ -111,11 +111,12 @@ public class ClueGUI extends JFrame {
             for (int i = 0; i < numPlayers; i++) {
                 nameLabels[i] = new JLabel("Player " + (i + 1) + ":");
                 nameFields[i] = new JTextField("Player " + (i + 1), 15);
-                characterBoxes[i] = new JComboBox<>(characters);
-                characterBoxes[i].setSelectedIndex(i % characters.length);
+                JComboBox<String> comboBox = new JComboBox<>(characters);
+                comboBox.setSelectedIndex(i % characters.length);
+                characterBoxes.add(comboBox);
 
                 playerSetupPanel.add(nameFields[i]);
-                playerSetupPanel.add(characterBoxes[i]);
+                playerSetupPanel.add(comboBox);
             }
 
             int result = JOptionPane.showConfirmDialog(this, playerSetupPanel,
@@ -130,8 +131,7 @@ public class ClueGUI extends JFrame {
                 for (int i = 0; i < numPlayers; i++) {
                     String name = nameFields[i].getText().trim();
                     if (name.isEmpty()) name = "Player " + (i + 1);
-
-                    String character = (String) characterBoxes[i].getSelectedItem();
+                    String character = (String) characterBoxes.get(i).getSelectedItem();
 
                     if (usedNames.contains(name) || usedCharacters.contains(character)) {
                         hasDuplicates = true;
@@ -153,7 +153,7 @@ public class ClueGUI extends JFrame {
                 for (int i = 0; i < numPlayers; i++) {
                     String name = nameFields[i].getText().trim();
                     if (name.isEmpty()) name = "Player " + (i + 1);
-                    String character = (String) characterBoxes[i].getSelectedItem();
+                    String character = (String) characterBoxes.get(i).getSelectedItem();
 
                     Point startPos = CHARACTER_START_POSITIONS.get(character);
                     Color color = CHARACTER_COLORS.get(character);
@@ -221,6 +221,7 @@ public class ClueGUI extends JFrame {
         private JTextArea textLog;
         private JScrollPane logScrollPane;
         public int movesRemaining = 0;
+        private boolean hasRolledThisTurn = false;
 
         public AccusationPanel() {
             setLayout(new BorderLayout());
@@ -268,10 +269,7 @@ public class ClueGUI extends JFrame {
                 boardPanel.requestFocusInWindow();
             });
             rollDiceButton.addActionListener(e -> {
-                int diceRoll = (int) (Math.random() * 6) + 1;
-                movesRemaining = diceRoll;
-                diceResults.setText("Moves Left: " + movesRemaining);
-                addToGameLog(getCurrentPlayer().getName() + " rolled a " + diceRoll + ".");
+                rollDice();
                 boardPanel.requestFocusInWindow();
             });
 
@@ -357,12 +355,28 @@ public class ClueGUI extends JFrame {
             // This would typically involve other players trying to disprove suggestion
             addToGameLog("Other players considering your suggestion...");
         }
+
+        private void rollDice() {
+            if (hasRolledThisTurn) {
+                addToGameLog("You already rolled this turn.");
+                return;
+            }
+            if (movesRemaining > 0) {
+                addToGameLog("You still have moves left!");
+                return;
+            }
+            movesRemaining = (int)(Math.random() * 6) + 1;
+            diceResults.setText("Moves Left: " + movesRemaining);
+            hasRolledThisTurn = true; 
+            addToGameLog("You rolled a " + movesRemaining + "! Use arrow keys to move.");
+        }
         
         /*
          * End the current player's turn and move to the next player
          */
         private void endTurn() {
             movesRemaining = 0;
+            hasRolledThisTurn = false;
             diceResults.setText("Moves Left: 0");
             nextPlayerTurn();
             boardPanel.repaint();
@@ -579,8 +593,12 @@ public class ClueGUI extends JFrame {
             GUIPlayer currentPlayer = getCurrentPlayer();
             if (currentPlayer == null) return;
 
-            if (accusationPanel.movesRemaining <= 0 && keyCode != KeyEvent.VK_ENTER) {
-                accusationPanel.addToGameLog("You have no moves left. Roll the dice to continue.");
+            if (accusationPanel.movesRemaining <= 0 && keyCode != KeyEvent.VK_ENTER && accusationPanel.hasRolledThisTurn) {
+                accusationPanel.addToGameLog("You have no moves left!");
+                return;
+            }
+            if (accusationPanel.movesRemaining <= 0 && keyCode != KeyEvent.VK_ENTER && !accusationPanel.hasRolledThisTurn) {
+                accusationPanel.addToGameLog("You must roll the dice before moving!");
                 return;
             }
             
