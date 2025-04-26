@@ -66,8 +66,9 @@ public class ClueGUI extends JFrame {
         // Initializes cards and game solution
         initializeCards();
         
-        accusationPanel = new AccusationPanel();
+        accusationPanel = new AccusationPanel(this);
         boardPanel = new BoardPanel(this, accusationPanel);
+        accusationPanel.setBoardPanel(boardPanel);
         
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, boardPanel, accusationPanel);
         splitPane.setResizeWeight(0.8);
@@ -273,7 +274,7 @@ public class ClueGUI extends JFrame {
      * Advance to the next player's turn
      */
     public void nextPlayerTurn() {
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        currentPlayerIndex = (getCurrentPlayerIndex() + 1) % players.size();
         accusationPanel.addToGameLog("\n" + players.get(currentPlayerIndex).getName() + 
                                   " (" + players.get(currentPlayerIndex).getCharacter() + 
                                   ") it's your turn.");

@@ -1,17 +1,11 @@
 package edu.gonzaga.GUI;
-import edu.gonzaga.GUI.*;
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class BoardPanel extends JPanel {

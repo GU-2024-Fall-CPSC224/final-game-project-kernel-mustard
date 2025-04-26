@@ -33,6 +33,10 @@ public class AccusationPanel extends JPanel{
     private boolean hasRolledThisTurn = false;
     private boolean hasMadeSuggestionThisTurn = false;
 
+    public void setBoardPanel(BoardPanel boardPanel) {
+        this.boardPanel = boardPanel;
+    }
+
     public boolean isHasRolledThisTurn() {
         return hasRolledThisTurn;
     }
@@ -40,7 +44,8 @@ public class AccusationPanel extends JPanel{
         return diceResults;
     }
 
-    public AccusationPanel() {
+    public AccusationPanel(ClueGUI clueGUI) {
+        this.clueGUI = clueGUI;
         setLayout(new BorderLayout());
         setBackground(new Color(200, 180, 160));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
