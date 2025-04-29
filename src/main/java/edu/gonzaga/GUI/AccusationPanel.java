@@ -234,6 +234,22 @@ public class AccusationPanel extends JPanel{
         } else {
             addToGameLog("INCORRECT! " + currentPlayer.getName() + " is now out of the game!");
             
+            eliminateCurrentPlayer(currentPlayer);
+
+                // 2) KICK THEIR TOKEN OFF THE BOARD
+                boardPanel.repaint();
+
+                // 3) IMMEDIATE GAME OVER if only one left
+                if (clueGUI.getPlayers().size() <= 1) {
+                    GUIPlayer survivor = clueGUI.getPlayers().get(0);
+                    addToGameLog(survivor.getName() + " is the last detective standing! Game Over.");
+                    gameOver = true;
+                    disableGameControls();
+                    JOptionPane.showMessageDialog(this,
+                        survivor.getName() + " wins— all others eliminated!",
+                        "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                    return;   // stop right here
+                }
             // Check which part was wrong but don't reveal the solution
             if (!clueGUI.getSolutionSuspect().getName().equals(suspect)) {
                 addToGameLog("The murderer was not " + suspect + ".");
@@ -280,6 +296,9 @@ public class AccusationPanel extends JPanel{
         if (!currentPlayer.isInRoom()) {
             addToGameLog("You must be in a room to make a suggestion!");
             return;
+        }else{
+            showPassDeviceBuffer();
+
         }
         
         if (hasMadeSuggestionThisTurn) {
@@ -429,5 +448,57 @@ public class AccusationPanel extends JPanel{
         textLog.append(message + "\n");
         // Auto-scroll to bottom
         textLog.setCaretPosition(textLog.getDocument().getLength());
+    }
+    private void eliminateCurrentPlayer(GUIPlayer toRemove) {
+        List<GUIPlayer> players = clueGUI.getPlayers();
+        int removedIdx = players.indexOf(toRemove);
+        if (removedIdx == -1) return;
+
+        // 1) yank them out of the list
+        players.remove(removedIdx);
+
+        // 2) if ClueGUI is tracking its own currentPlayerIndex, shift it back
+        //    so that nextPlayerTurn() won't skip—(you already use getCurrentPlayerIndex() in makeSuggestion)
+        int currIdx = clueGUI.getCurrentPlayerIndex();
+        if (removedIdx <= currIdx) {
+            // assume there's a setter; if not, add one in ClueGUI:
+            clueGUI.setCurrentPlayerIndex(currIdx - 1);
+        }
+    }
+    private void disableGameControls() {
+        accuseButton.setEnabled(false);
+        suggestButton.setEnabled(false);
+        endTurnButton.setEnabled(false);
+        rollDiceButton.setEnabled(false);
+        showCardsButton.setEnabled(false);
+    }
+
+    private void showPassDeviceBuffer() {
+        Window win = SwingUtilities.getWindowAncestor(this);
+        final JDialog dialog = new JDialog(win, "Pass Device", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setUndecorated(true);
+        dialog.setBackground(new Color(0, 0, 0, 200));
+        dialog.setLayout(new BorderLayout());
+
+        JLabel msg = new JLabel(
+            "<html><div style='text-align:center; color:white;'>PASS TO NEXT PLAYER<br><br>"
+          + "<span style='font-size:12px;'>(press SPACE to continue)</span>"
+          + "</div></html>", SwingConstants.CENTER);
+        msg.setFont(msg.getFont().deriveFont(24f));
+        dialog.add(msg, BorderLayout.CENTER);
+
+        JComponent content = (JComponent) dialog.getContentPane();
+        content.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+               .put(KeyStroke.getKeyStroke("SPACE"), "dismiss");
+        content.getActionMap()
+               .put("dismiss", new AbstractAction() {
+                   public void actionPerformed(ActionEvent e) {
+                       dialog.dispose();
+                   }
+               });
+
+        dialog.setSize(win.getSize());
+        dialog.setLocationRelativeTo(win);
+        dialog.setVisible(true);
     }
 }

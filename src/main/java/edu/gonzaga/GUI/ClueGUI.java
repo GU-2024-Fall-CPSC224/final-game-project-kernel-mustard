@@ -22,6 +22,8 @@ public class ClueGUI extends JFrame {
     private List<GUIPlayer> players = new ArrayList<>();
     private JPanel mainPanel;
     private CardLayout cardLayout;
+    private GUIPlayer currentPlayer;
+
 
     public List<GUIPlayer> getPlayers() {
         return players;
@@ -48,6 +50,24 @@ public class ClueGUI extends JFrame {
 
     public Card getSolutionRoom() {
         return solutionRoom;
+    }
+
+    public void setCurrentPlayerIndex(int idx) {
+        // wrap negative indices to the end
+        if (idx < 0) {
+            idx = players.size() - 1;
+        }
+        // clamp above to last player
+        else if (idx >= players.size()) {
+            idx = idx % players.size();
+        }
+        this.currentPlayerIndex = idx;
+
+        // sync the currentPlayer reference
+        this.currentPlayer = players.get(currentPlayerIndex);
+
+        // if you have a method to highlight the new player on the board, call it:
+        // highlightCurrentPlayerOnBoard();
     }
 
     // Game cards
@@ -96,6 +116,35 @@ public class ClueGUI extends JFrame {
             buttonPanel.add(startButton);
             add(buttonPanel, BorderLayout.SOUTH);
         }
+    }
+
+    private void showPassDeviceBuffer() {
+        Window win = SwingUtilities.getWindowAncestor(this);
+        final JDialog dialog = new JDialog(win, "Pass Device", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setUndecorated(true);
+        dialog.setBackground(new Color(0, 0, 0, 200));
+        dialog.setLayout(new BorderLayout());
+
+        JLabel msg = new JLabel(
+            "<html><div style='text-align:center; color:white;'>PASS TO NEXT PLAYER<br><br>"
+          + "<span style='font-size:12px;'>(press SPACE to continue)</span>"
+          + "</div></html>", SwingConstants.CENTER);
+        msg.setFont(msg.getFont().deriveFont(24f));
+        dialog.add(msg, BorderLayout.CENTER);
+
+        JComponent content = (JComponent) dialog.getContentPane();
+        content.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+               .put(KeyStroke.getKeyStroke("SPACE"), "dismiss");
+        content.getActionMap()
+               .put("dismiss", new AbstractAction() {
+                   public void actionPerformed(ActionEvent e) {
+                       dialog.dispose();
+                   }
+               });
+
+        dialog.setSize(win.getSize());
+        dialog.setLocationRelativeTo(win);
+        dialog.setVisible(true);
     }
 
     private void openPlayerSetup() {
