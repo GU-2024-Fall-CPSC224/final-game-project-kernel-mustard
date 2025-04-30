@@ -15,11 +15,12 @@ public class BoardPanel extends JPanel {
     private Map<String, List<WallOpening>> wallOpenings = new HashMap<>();
     private ClueGUI clueGUI;
     private AccusationPanel accusationPanel;
+    private Image backgroundImage;
     
     // Set grid size and player position
     private final int GRID_SIZE = 40;
-    private final int ROWS = 18;
-    private final int COLS = 19;
+    private final int ROWS = 25;
+    private final int COLS = 24;
     
     // Movement statuses
     private boolean[][] validMovementTiles;
@@ -30,6 +31,7 @@ public class BoardPanel extends JPanel {
     public BoardPanel(ClueGUI clueGUI, AccusationPanel accusationPanel) {
         this.clueGUI = clueGUI;
         this.accusationPanel = accusationPanel;
+        backgroundImage = new ImageIcon(getClass().getResource("/edu/gonzaga/GUI/clueboard.jpg")).getImage();
         // Initialize rooms
         setupRooms();
         
@@ -56,105 +58,115 @@ public class BoardPanel extends JPanel {
         // Create wall openings for each room
         wallOpenings.put("Kitchen", new ArrayList<>());
         wallOpenings.get("Kitchen").add(new WallOpening(
-            new Point(3, 3), // Inside point
-            new Point(3, 4), // Outside point
-            2 // Right wall
+            new Point(19, 18), // Inside point
+            new Point(19, 17), // Outside point
+            0 // Top wall
         ));
         
         wallOpenings.put("Ballroom", new ArrayList<>());
         wallOpenings.get("Ballroom").add(new WallOpening(
-            new Point(9, 4),  // Inside point
-            new Point(9, 5),  // Outside point
-            2 // Bottom wall
+            new Point(9, 17),  // Inside point
+            new Point(9, 16),  // Outside point
+            0 // Top wall
         ));
         wallOpenings.get("Ballroom").add(new WallOpening(
-            new Point(11, 4),  // Inside point
-            new Point(11, 5),  // Outside point
-            2 // Bottom wall
+            new Point(14, 17),  // Inside point
+            new Point(14, 16),  // Outside point
+            0 // Top wall
+        ));
+        wallOpenings.get("Ballroom").add(new WallOpening(
+            new Point(15, 19),  // Inside point
+            new Point(16, 19),  // Outside point
+            1 // Right wall
+        ));
+        wallOpenings.get("Ballroom").add(new WallOpening(
+            new Point(9, 19),  // Inside point
+            new Point(7, 19),  // Outside point
+            3 // Left wall
         ));
         
         wallOpenings.put("Conservatory", new ArrayList<>());
         wallOpenings.get("Conservatory").add(new WallOpening(
-            new Point(15, 2),  // Inside point
-            new Point(14, 2),  // Outside point
-            3 // Left wall
+            new Point(4, 19),  // Inside point
+            new Point(5, 19),  // Outside point
+            1 // Right wall
         ));
         
         wallOpenings.put("Dining Room", new ArrayList<>());
         wallOpenings.get("Dining Room").add(new WallOpening(
-            new Point(5, 9),  // Inside point
-            new Point(6, 9),  // Outside point
-            1 // Right wall
-        ));
-        wallOpenings.get("Dining Room").add(new WallOpening(
-            new Point(3, 7),  // Inside point
-            new Point(3, 6),  // Outside point
+            new Point(17, 9),  // Inside point
+            new Point(17, 8),  // Outside point
             0 // Top wall
         ));
         wallOpenings.get("Dining Room").add(new WallOpening(
-            new Point(6, 9),  // Inside point
-            new Point(7, 8),  // Outside point
-            0 // Top wall
+            new Point(17, 12),  // Inside point
+            new Point(15, 12),  // Outside point
+            3 // Left wall
         ));
         
         wallOpenings.put("Lounge", new ArrayList<>());
         wallOpenings.get("Lounge").add(new WallOpening(
-            new Point(3, 15),  // Inside point
-            new Point(4, 15),  // Outside point
-            1 // Right wall
+            new Point(18, 5),  // Inside point
+            new Point(17, 6),  // Outside point
+            2 // Bottom wall
         ));
         
         wallOpenings.put("Hall", new ArrayList<>());
         wallOpenings.get("Hall").add(new WallOpening(
-            new Point(7, 13),  // Inside point
-            new Point(7, 12),  // Outside point
-            0 // Top wall
+            new Point(10, 4),  // Inside point
+            new Point(8, 4),  // Outside point
+            3 // Left wall
         ));
         wallOpenings.get("Hall").add(new WallOpening(
-            new Point(11, 13),  // Inside point
-            new Point(11, 12),  // Outside point
-            0 // Top wall
+            new Point(11, 5),  // Inside point
+            new Point(11, 7),  // Outside point
+            2 // Bottom wall
+        ));
+        wallOpenings.get("Hall").add(new WallOpening(
+            new Point(12, 5),  // Inside point
+            new Point(12, 7),  // Outside point
+            2 // Bottom wall
         ));
         
         wallOpenings.put("Study", new ArrayList<>());
         wallOpenings.get("Study").add(new WallOpening(
-            new Point(16, 15),  // Inside point
-            new Point(16, 14),  // Outside point
+            new Point(6, 3),  // Inside point
+            new Point(6, 4),  // Outside point
             0 // Top wall
         ));
         
         wallOpenings.put("Library", new ArrayList<>());
         wallOpenings.get("Library").add(new WallOpening(
-            new Point(15, 10),  // Inside point
-            new Point(14, 10),  // Outside point
-            3 // Left wall
+            new Point(5, 8),  // Inside point
+            new Point(7, 8),  // Outside point
+            1 // Right wall
         ));
         wallOpenings.get("Library").add(new WallOpening(
-            new Point(17, 12),  // Inside point
-            new Point(17, 13),  // Outside point
+            new Point(3, 10),  // Inside point
+            new Point(3, 11),  // Outside point
             2 // Bottom wall
         ));
         
         wallOpenings.put("Billiard Room", new ArrayList<>());
         wallOpenings.get("Billiard Room").add(new WallOpening(
-            new Point(14, 6),  // Inside point
-            new Point(13, 6),  // Outside point
-            3 // Left wall
+            new Point(1, 12),  // Inside point
+            new Point(1, 11),  // Outside point
+            0 // Top wall
         ));
         wallOpenings.get("Billiard Room").add(new WallOpening(
-            new Point(17, 6),  // Inside point
-            new Point(17, 7),  // Outside point
-            2 // Bottom wall
+            new Point(5, 15),  // Inside point
+            new Point(6, 15),  // Outside point
+            1 // Right wall
         ));
         wallOpenings.put("CLUE", new ArrayList<>());
     }
     
     /*
-        * Creates a boolean grid that tracks which tiles are valid for player to move in.
-        * Marks hallways as valid and rooms and invalid for direct movement.
-        * TODO: Need to make it so a user from inside a room can exit from either doorway if there is more than one.
-        * Currently a user can only exit from the door they entered from.
-        */
+    * Creates a boolean grid that tracks which tiles are valid for player to move in.
+    * Marks hallways as valid and rooms and invalid for direct movement.
+    * TODO: Need to make it so a user from inside a room can exit from either doorway if there is more than one.
+    * Currently a user can only exit from the door they entered from.
+    */
     private void setupValidMovementTiles() {
         validMovementTiles = new boolean[ROWS][COLS];
         
@@ -167,10 +179,10 @@ public class BoardPanel extends JPanel {
         
         // Then we mark tiles in a room as invalid for movement
         for (Rectangle room : rooms.values()) {
-            int startRow = room.y / GRID_SIZE;
-            int startCol = room.x / GRID_SIZE;
-            int endRow = (room.y + room.height) / GRID_SIZE;
-            int endCol = (room.x + room.width) / GRID_SIZE;
+            int startRow = (room.y - 53)/ 39;
+            int startCol = (room.x - 258) / GRID_SIZE;
+            int endRow = (room.y + room.height - 55) / GRID_SIZE;
+            int endCol = (room.x + room.width - 260) / GRID_SIZE;
             
             for (int row = startRow; row < endRow; row++) {
                 for (int col = startCol; col < endCol; col++) {
@@ -187,6 +199,103 @@ public class BoardPanel extends JPanel {
                 validMovementTiles[opening.hallwayPoint.y][opening.hallwayPoint.x] = true;
             }
         }
+        
+        // These spots were weirdly enough not covered by the rooms even though they should've been. As a late-night fix
+        // I have specifically set them to be false.
+
+        // Section below and right of Study (works)
+        for (int i = 1; i < 7; ++i) {
+            validMovementTiles[3][i] = false;
+        } 
+        for (int j = 0; j < 3; ++j) {
+            validMovementTiles[j][6] = false;
+        }
+        // Section below Lounge (works)
+        for (int i = 17; i < 23; ++i) {
+            validMovementTiles[5][i] = false;
+        } 
+        // Section below Hall (works)
+        for (int i = 9; i < 15; ++i) {
+            validMovementTiles[6][i] = false;
+        }
+        // Section below Library (works)
+        for (int i = 0; i < 6; ++i) {
+            validMovementTiles[10][i] = false;
+        }
+        // Section below Dining Room
+        for (int i = 16; i < 20; ++i) {
+            validMovementTiles[14][i] = false;
+        }
+        // Section below Clue
+        for (int i = 9; i < 14; ++i) {
+            validMovementTiles[14][i] = false;
+        }
+        // Section below Billiard Room
+        for (int i = 0; i < 6; ++i) {
+            validMovementTiles[16][i] = false;
+        }
+        // Section below Ballroom
+        for (int i = 8; i < 16; ++i) {
+            validMovementTiles[22][i] = false;
+        }
+
+
+        // Lastly, mark any out of bounds spots that are not covered by rectangular rooms
+        validMovementTiles[4][0] = false;
+        validMovementTiles[11][0] = false;
+        validMovementTiles[17][0] = false;
+
+        // Section right of library (including door)
+        validMovementTiles[7][6] = false;
+        validMovementTiles[8][6] = false;
+        validMovementTiles[9][6] = false;
+
+        // Section right of Conservatory 
+        validMovementTiles[20][5] = false;
+        validMovementTiles[21][5] = false;
+        validMovementTiles[22][5] = false;
+        validMovementTiles[23][5] = false;
+        validMovementTiles[24][5] = false;
+
+        validMovementTiles[23][6] = false;
+        validMovementTiles[24][6] = false;
+
+        validMovementTiles[24][7] = false;
+        validMovementTiles[0][8] = false;
+
+        // Tiny section left of Hall
+        validMovementTiles[24][8] = false;
+
+        // Section below Ballroom
+        validMovementTiles[23][10] = false;
+        validMovementTiles[23][11] = false;
+        validMovementTiles[23][12] = false;
+        validMovementTiles[23][13] = false;
+        validMovementTiles[24][10] = false;
+        validMovementTiles[24][11] = false;
+        validMovementTiles[24][12] = false;
+        validMovementTiles[24][13] = false;
+
+        // Tiny section right of Hall
+        validMovementTiles[0][15] = false;
+
+        // Section left of Kitchen
+        validMovementTiles[24][15] = false;
+        validMovementTiles[24][16] = false; 
+        validMovementTiles[23][17] = false;
+        validMovementTiles[24][17] = false;
+
+        // Section below Dining Room
+        validMovementTiles[15][19] = false;
+        validMovementTiles[15][20] = false;
+        validMovementTiles[15][21] = false;
+        validMovementTiles[15][22] = false;
+        validMovementTiles[15][23] = false;
+        validMovementTiles[16][23] = false;
+
+        // Section between Dining Room and Lounge
+        validMovementTiles[6][23] = false;
+        validMovementTiles[8][23] = false;
     }
     
     /*
@@ -278,7 +387,7 @@ public class BoardPanel extends JPanel {
             }
         }
     }
-    
+        
     /*
     * This function manages entrance and exit to/from rooms when a player presses the 'Enter' key
     */
@@ -300,6 +409,28 @@ public class BoardPanel extends JPanel {
                         player.setCol(opening.roomPoint.x);
 
                         accusationPanel.addToGameLog(player.getName() + " entered the " + roomName);
+                        
+                        repaint();
+                        return;
+                    }
+                }
+            }
+        } else {
+            // Player is in room, check if they can exit
+            String currentRoom = player.getCurrentRoom();
+            if (currentRoom != null && wallOpenings.containsKey(currentRoom)) {
+                for (WallOpening opening : wallOpenings.get(currentRoom)) {
+                    // Check if player is at the room point of any opening
+                    if (opening.roomPoint.y == player.getRow() && opening.roomPoint.x == player.getCol()) {
+                        // Exit room
+                        player.setInRoom(false);
+                        player.setCurrentRoom(null);
+                        
+                        // Move player to the hallway point
+                        player.setRow(opening.hallwayPoint.y);
+                        player.setCol(opening.hallwayPoint.x);
+                        
+                        accusationPanel.addToGameLog(player.getName() + " exited the " + currentRoom);
                         
                         repaint();
                         return;
@@ -329,17 +460,18 @@ public class BoardPanel extends JPanel {
     * Initializes game rooms with their specific positions, colors, and sizes.
     */
     private void setupRooms() {
+
         // Set room rectangles (x, y, width, height)
-        rooms.put("Kitchen", new Rectangle(0, 0, 200, 160));
-        rooms.put("Ballroom", new Rectangle(280, 0, 200, 200));
-        rooms.put("Conservatory", new Rectangle(600, 0, 160, 160));
-        rooms.put("Dining Room", new Rectangle(0, 280, 240, 160));
-        rooms.put("Hall", new Rectangle(280, 520, 200, 200));
-        rooms.put("Lounge", new Rectangle(0, 560, 160, 160));
-        rooms.put("Library", new Rectangle(600, 360, 160, 160));
-        rooms.put("Study", new Rectangle(560, 600, 200, 120));
-        rooms.put("Billiard Room", new Rectangle(560, 200, 200, 80));
-        rooms.put("CLUE", new Rectangle(320, 280, 120, 160));
+        rooms.put("Kitchen", new Rectangle(983, 760, 237, 280));
+        rooms.put("Ballroom", new Rectangle(583, 723, 317, 230));
+        rooms.put("Conservatory", new Rectangle(263, 799, 200, 231));
+        rooms.put("Dining Room", new Rectangle(903, 410, 315, 235));
+        rooms.put("Lounge", new Rectangle(940, 55, 278, 235));    
+        rooms.put("Hall", new Rectangle(620, 55, 240, 270));           
+        rooms.put("Study", new Rectangle(258, 53, 273, 160));           
+        rooms.put("Library", new Rectangle(260, 290, 240, 196));      
+        rooms.put("Billiard Room", new Rectangle(260, 523, 240, 196)); 
+        rooms.put("CLUE", new Rectangle(623, 370, 200, 273));
         
         // Set room colors
         roomColors.put("Kitchen", new Color(220, 220, 220));
@@ -368,6 +500,21 @@ public class BoardPanel extends JPanel {
         // Draw rooms with wall openings
         drawRoomsWithOpenings(g2d);
         
+        // Temporarily draw image with translucency for matching grid
+        float alpha = 1f; 
+
+        Composite originalComposite = g2d.getComposite();
+
+        AlphaComposite alphaComp = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
+        
+        g2d.setComposite(alphaComp);
+
+        // Delete above to get rid of translucency
+        g2d.drawImage(backgroundImage, 200, 0, 1080, 1080, this);
+
+        // Restore composite state (translucency)
+        g2d.setComposite(originalComposite);
+
         // Draw player token
         drawPlayers(g2d);
         
@@ -383,11 +530,10 @@ public class BoardPanel extends JPanel {
         g2d.setColor(new Color(200, 150, 150));
         g2d.fillRect(0, 0, getWidth(), getHeight());
         
-        // Draw the checkered pattern for the hallways
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
-                int x = col * GRID_SIZE;
-                int y = row * GRID_SIZE;
+                int x = 258 + col * GRID_SIZE;
+                int y = 53 + row * 39;
                 
                 if (validMovementTiles[row][col]) {
                 
@@ -447,77 +593,92 @@ public class BoardPanel extends JPanel {
         g2d.setColor(Color.ORANGE);
         g2d.setStroke(new BasicStroke(3));
         
-        int roomStartRow = rect.y / GRID_SIZE;
-        int roomStartCol = rect.x / GRID_SIZE;
-        int roomEndRow = (rect.y + rect.height) / GRID_SIZE;
-        int roomEndCol = (rect.x + rect.width) / GRID_SIZE;
+        // Draw the rectangle border directly using the rectangle coordinates
+        int x = rect.x;
+        int y = rect.y;
+        int width = rect.width;
+        int height = rect.height;
         
         // Draw top wall
-        for (int col = roomStartCol; col < roomEndCol; col++) {
-            boolean isOpening = false;
-            for (WallOpening opening : openings) {
-                // Check if this is where the opening should be on the top wall
-                if (opening.wallSide == 0 && opening.roomPoint.x == col) {
-                    isOpening = true;
-                    break;
+        if (openings != null) {
+            // Draw top wall with openings (if needed)
+            for (int i = 0; i < width; i += GRID_SIZE) {
+                boolean isOpening = false;
+                for (WallOpening opening : openings) {
+                    // Check if this segment should be an opening on the top wall
+                    if (opening.wallSide == 0 && 
+                        x + i >= x + opening.roomPoint.x * GRID_SIZE && 
+                        x + i < x + (opening.roomPoint.x + 1) * GRID_SIZE) {
+                        isOpening = true;
+                        break;
+                    }
+                }
+                
+                if (!isOpening) {
+                    int segmentLength = Math.min(GRID_SIZE, width - i);
+                    g2d.drawLine(x + i, y, x + i + segmentLength, y);
                 }
             }
             
-            if (!isOpening) {
-                g2d.drawLine(col * GRID_SIZE, roomStartRow * GRID_SIZE, 
-                            (col + 1) * GRID_SIZE, roomStartRow * GRID_SIZE);
-            }
-        }
-        
-        // Draw right wall
-        for (int row = roomStartRow; row < roomEndRow; row++) {
-            boolean isOpening = false;
-            for (WallOpening opening : openings) {
-                // Check if this is where the opening should be on the right wall
-                if (opening.wallSide == 1 && opening.roomPoint.y == row) {
-                    isOpening = true;
-                    break;
+            // Draw right wall with openings (if needed)
+            for (int i = 0; i < height; i += GRID_SIZE) {
+                boolean isOpening = false;
+                for (WallOpening opening : openings) {
+                    // Check for opening on right wall
+                    if (opening.wallSide == 1 && 
+                        y + i >= y + opening.roomPoint.y * GRID_SIZE && 
+                        y + i < y + (opening.roomPoint.y + 1) * GRID_SIZE) {
+                        isOpening = true;
+                        break;
+                    }
+                }
+                
+                if (!isOpening) {
+                    int segmentLength = Math.min(GRID_SIZE, height - i);
+                    g2d.drawLine(x + width, y + i, x + width, y + i + segmentLength);
                 }
             }
             
-            if (!isOpening) {
-                g2d.drawLine(roomEndCol * GRID_SIZE, row * GRID_SIZE, 
-                            roomEndCol * GRID_SIZE, (row + 1) * GRID_SIZE);
-            }
-        }
-        
-        // Draw bottom wall
-        for (int col = roomStartCol; col < roomEndCol; col++) {
-            boolean isOpening = false;
-            for (WallOpening opening : openings) {
-                // Check if this is where the opening should be on the bottom wall
-                if (opening.wallSide == 2 && opening.roomPoint.x == col) {
-                    isOpening = true;
-                    break;
+            // Draw bottom wall with openings (if needed)
+            for (int i = 0; i < width; i += GRID_SIZE) {
+                boolean isOpening = false;
+                for (WallOpening opening : openings) {
+                    // Check for opening on bottom wall
+                    if (opening.wallSide == 2 && 
+                        x + i >= x + opening.roomPoint.x * GRID_SIZE && 
+                        x + i < x + (opening.roomPoint.x + 1) * GRID_SIZE) {
+                        isOpening = true;
+                        break;
+                    }
+                }
+                
+                if (!isOpening) {
+                    int segmentLength = Math.min(GRID_SIZE, width - i);
+                    g2d.drawLine(x + i, y + height, x + i + segmentLength, y + height);
                 }
             }
             
-            if (!isOpening) {
-                g2d.drawLine(col * GRID_SIZE, roomEndRow * GRID_SIZE, 
-                            (col + 1) * GRID_SIZE, roomEndRow * GRID_SIZE);
-            }
-        }
-        
-        // Draw left wall
-        for (int row = roomStartRow; row < roomEndRow; row++) {
-            boolean isOpening = false;
-            for (WallOpening opening : openings) {
-                // Check if this is where the opening should be on the left wall
-                if (opening.wallSide == 3 && opening.roomPoint.y == row) {
-                    isOpening = true;
-                    break;
+            // Draw left wall with openings (if needed)
+            for (int i = 0; i < height; i += GRID_SIZE) {
+                boolean isOpening = false;
+                for (WallOpening opening : openings) {
+                    // Check for opening on left wall
+                    if (opening.wallSide == 3 && 
+                        y + i >= y + opening.roomPoint.y * GRID_SIZE && 
+                        y + i < y + (opening.roomPoint.y + 1) * GRID_SIZE) {
+                        isOpening = true;
+                        break;
+                    }
+                }
+                
+                if (!isOpening) {
+                    int segmentLength = Math.min(GRID_SIZE, height - i);
+                    g2d.drawLine(x, y + i, x, y + i + segmentLength);
                 }
             }
-            
-            if (!isOpening) {
-                g2d.drawLine(roomStartCol * GRID_SIZE, row * GRID_SIZE, 
-                            roomStartCol * GRID_SIZE, (row + 1) * GRID_SIZE);
-            }
+        } else {
+            // If no openings are defined, just draw the complete rectangle
+            g2d.drawRect(x, y, width, height);
         }
     }
     
@@ -532,12 +693,12 @@ public class BoardPanel extends JPanel {
             
             if (player.isInRoom()) {
                 // If player is in a room, calculate position within room
-                playerX = player.getCol() * GRID_SIZE;
-                playerY = player.getRow() * GRID_SIZE;
+                playerX = 258 + player.getCol() * 39;
+                playerY = 53 + player.getRow() * GRID_SIZE;
             } else {
                 // If player is in hallway, use grid coordinates
-                playerX = player.getCol() * GRID_SIZE;
-                playerY = player.getRow() * GRID_SIZE;
+                playerX = 258 + player.getCol() * GRID_SIZE;
+                playerY = 55 + player.getRow() * 39;
             }
             
             // Draw player token

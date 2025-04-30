@@ -30,12 +30,12 @@ public class ClueConstants {
     private static final Map<String, Color> CHARACTER_COLORS = new HashMap<>();
     
     static {
-        CHARACTER_START_POSITIONS.put("Colonel Mustard", new Point(0, 13)); // Yellow, starts near Lounge
-        CHARACTER_START_POSITIONS.put("Professor Plum", new Point(18, 14)); // Purple, starts near Study
-        CHARACTER_START_POSITIONS.put("Miss Scarlet", new Point(5, 0)); // Red, starts near Kitchen
-        CHARACTER_START_POSITIONS.put("Reverend Green", new Point(18, 4)); // Green, starts near Conservatory
-        CHARACTER_START_POSITIONS.put("Mrs. White", new Point(4, 17)); // White, starts near Lounge
-        CHARACTER_START_POSITIONS.put("Mrs. Peacock", new Point(12, 17)); // Blue, starts near Library
+        CHARACTER_START_POSITIONS.put("Colonel Mustard", new Point(23, 7)); // Yellow
+        CHARACTER_START_POSITIONS.put("Professor Plum", new Point(0, 5)); // Purple
+        CHARACTER_START_POSITIONS.put("Miss Scarlet", new Point(16, 0)); // Red
+        CHARACTER_START_POSITIONS.put("Reverend Green", new Point(9, 24)); // Green
+        CHARACTER_START_POSITIONS.put("Mrs. White", new Point(14, 24)); // White
+        CHARACTER_START_POSITIONS.put("Mrs. Peacock", new Point(0, 18)); // Blue
         
         CHARACTER_COLORS.put("Colonel Mustard", new Color(255, 215, 0));
         CHARACTER_COLORS.put("Professor Plum", new Color(128, 0, 128));

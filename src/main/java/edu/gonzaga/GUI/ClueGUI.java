@@ -296,6 +296,8 @@ public class ClueGUI extends JFrame {
 
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, boardPanel, accusationPanel);
         splitPane.setResizeWeight(0.8);
+        splitPane.setDividerSize(0);
+        splitPane.setOneTouchExpandable(false);
         
         mainPanel.add(splitPane, "Game");
         cardLayout.show(mainPanel, "Game");

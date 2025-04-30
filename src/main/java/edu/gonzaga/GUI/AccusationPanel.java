@@ -178,7 +178,6 @@ public class AccusationPanel extends JPanel{
 
     /* 
     * Make an accusation with the selected options by player
-    * TODO: If player is wrong, they lose and should be out
     */
     private void makeAccusation() {
         GUIPlayer currentPlayer = clueGUI.getCurrentPlayer();
@@ -193,6 +192,9 @@ public class AccusationPanel extends JPanel{
         String suspect = (String) suspectBox.getSelectedItem();
         String weapon = (String) weaponBox.getSelectedItem();
         
+        // This line is for testing:
+        // addToGameLog(("answer" + clueGUI.getSolutionSuspect().getName() + clueGUI.getSolutionWeapon().getName() + clueGUI.getSolutionRoom().getName()));
+
         // Ask for confirmation with player since accusation is final
         int confirm = JOptionPane.showConfirmDialog(this,
             "Are you sure you want to make this accusation?\n" +
@@ -231,6 +233,18 @@ public class AccusationPanel extends JPanel{
                 "Congratulations! You've solved the case!\n\n" +
                 "The solution was: " + suspect + " in the " + room + " with the " + weapon + ".",
                 "You Win!", JOptionPane.INFORMATION_MESSAGE);
+
+            // Add a small delay before closing game to ensure the dialog is fully closed
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    // Small delay to ensure dialog is closed
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                // Exit the application
+                System.exit(0);
+            });
         } else {
             addToGameLog("INCORRECT! " + currentPlayer.getName() + " is now out of the game!");
             
